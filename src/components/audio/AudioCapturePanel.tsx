@@ -114,7 +114,7 @@ export function AudioCapturePanel({
             音声入力
           </h2>
           <p className="mt-2 text-sm font-medium leading-6 text-neutral-600">
-            録音開始後、相手の質問を文字起こしして回答案に使います。
+            Chrome/EdgeでZoomやMeetのブラウザタブを選び、タブ音声を共有すると相手の質問を文字起こしできます。
           </p>
         </div>
         <span
@@ -147,6 +147,13 @@ export function AudioCapturePanel({
             : "border-neutral-950/10 bg-neutral-50",
         )}
       >
+        <div className="mb-4 rounded-2xl border border-neutral-950/10 bg-white p-4 text-sm font-medium leading-6 text-neutral-700">
+          <p className="font-semibold text-neutral-950">相手の声を拾うには</p>
+          <p className="mt-2">
+            Zoom/Meetをブラウザで開き、録音開始後の共有ダイアログで「タブ」を選びます。Macでは画面全体やウィンドウ共有では音声が付かないことがあります。
+          </p>
+        </div>
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p
@@ -189,7 +196,9 @@ export function AudioCapturePanel({
             )}
           >
             <MonitorUp className="h-5 w-5" aria-hidden />
-            {isRecording && activeSource === "remote" ? "録音中" : "録音開始"}
+            {isRecording && activeSource === "remote"
+              ? "録音中"
+              : "Zoom/Meetタブ音声を録音"}
           </button>
           <button
             type="button"
