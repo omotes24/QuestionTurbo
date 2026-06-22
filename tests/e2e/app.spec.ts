@@ -15,6 +15,7 @@ test("manual question flow with mock OpenAI", async ({ page }) => {
 
   await page.goto("/company");
   await page.getByRole("button", { name: "自分のことを反映" }).click();
+  await page.getByLabel("会社名").fill("サンプル株式会社");
   await page
     .getByLabel("企業Webサイト")
     .fill("https://sample.example.com/recruit");
@@ -22,6 +23,9 @@ test("manual question flow with mock OpenAI", async ({ page }) => {
   await page.getByLabel("その他").fill("SatoFCの経験を中心に話したい");
   await page.getByRole("button", { name: "学習用スロット作成" }).click();
   await expect(page.getByText("SLOT 1")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "サンプル株式会社" }),
+  ).toBeVisible();
 
   await page.goto("/support");
   await page

@@ -3,7 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Loader2, Plus, Search, Trash2 } from "lucide-react";
 
-import { FormField, textareaClassName } from "@/components/forms/FormField";
+import {
+  FormField,
+  inputClassName,
+  textareaClassName,
+} from "@/components/forms/FormField";
 import { PageHeader } from "@/components/layout/PageHeader";
 import {
   companyProfileSchema,
@@ -40,12 +44,16 @@ export function CompanyManager() {
     [activeProfile],
   );
   const [selfInfo, setSelfInfo] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [desiredCourse, setDesiredCourse] = useState("");
   const [additionalNotes, setAdditionalNotes] = useState("");
   const [draft, setDraft] = useState<CompanyProfile>(
     createEmptyCompanyProfile(),
   );
+  const [autoSelectedCompanyId, setAutoSelectedCompanyId] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -60,18 +68,31 @@ export function CompanyManager() {
   }, [selfInfo, suggestedSelfInfo]);
 
   useEffect(() => {
-    if (!draft.companyName && storage.companies[0]) {
+    const firstCompany = storage.companies[0];
+    if (
+      !draft.companyName &&
+      firstCompany &&
+      autoSelectedCompanyId !== firstCompany.id
+    ) {
       const timer = window.setTimeout(() => {
-        selectCompany(storage.companies[0]);
+        selectCompany(firstCompany);
+        setAutoSelectedCompanyId(firstCompany.id);
       }, 0);
       return () => window.clearTimeout(timer);
     }
     return undefined;
-  }, [storage.companies, draft.companyName]);
+  }, [storage.companies, draft.companyName, autoSelectedCompanyId]);
 
   async function researchAndSave() {
-    if (!selfInfo.trim() || !companyWebsite.trim() || !desiredCourse.trim()) {
-      setStatus("自分のこと、企業Webサイト、志望コースを入力してください。");
+    if (
+      !selfInfo.trim() ||
+      !companyName.trim() ||
+      !companyWebsite.trim() ||
+      !desiredCourse.trim()
+    ) {
+      setStatus(
+        "自分のこと、会社名、企業Webサイト、志望コースを入力してください。",
+      );
       return;
     }
     setLoading(true);
@@ -82,6 +103,7 @@ export function CompanyManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           selfInfo,
+          companyName,
           companyWebsite,
           desiredCourse,
           additionalNotes,
@@ -105,6 +127,7 @@ export function CompanyManager() {
   }
 
   function reset() {
+    setCompanyName("");
     setCompanyWebsite("");
     setDesiredCourse("");
     setAdditionalNotes("");
@@ -114,6 +137,7 @@ export function CompanyManager() {
 
   function selectCompany(company: CompanyProfile) {
     setDraft(company);
+    setCompanyName(company.companyName || company.label);
     setCompanyWebsite(company.researchSources[0] ?? "");
     setDesiredCourse(company.researchInstruction || company.targetRole);
     setAdditionalNotes(company.interviewFocus);
@@ -124,7 +148,7 @@ export function CompanyManager() {
     <section>
       <PageHeader
         title="会社スロット"
-        description="自分のこと、企業Webサイト、志望コース、その他だけで企業研究を作ります。複数社はスロットとして切り替えます。"
+        description="自分のこと、会社名、企業Webサイト、志望コース、その他だけで企業研究を作ります。複数社はスロットとして切り替えます。"
       />
 
       <div className="grid gap-5">
@@ -151,7 +175,7 @@ export function CompanyManager() {
           <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {storage.companies.length === 0 ? (
               <div className="rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-neutral-300 sm:col-span-2 xl:col-span-4">
-                まだスロットがありません。下の4項目を入れて作成します。
+                まだスロットがありません。下の5項目を入れて作成します。
               </div>
             ) : (
               storage.companies.map((company, index) => (
@@ -202,7 +226,7 @@ export function CompanyManager() {
                     </span>
                     <button
                       type="button"
-                      aria-label={`${company.label}を削除`}
+                      aria-label={`${company.companyName || company.label}を削除`}
                       onClick={() => actions.deleteCompany(company.id)}
                       className={cn(
                         "rounded-full p-1.5 transition",
@@ -223,12 +247,22 @@ export function CompanyManager() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
           <form className="rounded-[28px] border border-neutral-950/10 bg-white p-5 shadow-sm sm:p-6">
             <div className="grid gap-5 md:grid-cols-2">
-              <FormField label="自分のこと">
-                <textarea
-                  className={textareaClassName}
-                  value={selfInfo}
-                  onChange={(event) => setSelfInfo(event.target.value)}
-                  placeholder="SatoFC、研究、塾運営、強み、弱みなど"
+              <div className="md:col-span-2">
+                <FormField label="自分のこと">
+                  <textarea
+                    className={textareaClassName}
+                    value={selfInfo}
+                    onChange={(event) => setSelfInfo(event.target.value)}
+                    placeholder="SatoFC、研究、塾運営、強み、弱みなど"
+                  />
+                </FormField>
+              </div>
+              <FormField label="会社名">
+                <input
+                  className={inputClassName}
+                  value={companyName}
+                  onChange={(event) => setCompanyName(event.target.value)}
+                  placeholder="例: サイバーエージェント"
                 />
               </FormField>
               <FormField label="企業Webサイト">

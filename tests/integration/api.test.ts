@@ -71,6 +71,7 @@ describe("API routes in mock mode", () => {
         method: "POST",
         body: JSON.stringify({
           selfInfo: "SatoFCで野生動物追跡システムを実装した",
+          companyName: "サンプル株式会社",
           companyWebsite: "https://example.com/recruit",
           desiredCourse: "A職 Bコース",
           additionalNotes: "現場実装経験を接続したい",
@@ -80,6 +81,7 @@ describe("API routes in mock mode", () => {
 
     expect(response.ok).toBe(true);
     await expect(response.json()).resolves.toMatchObject({
+      companyName: "サンプル株式会社",
       targetRole: "A職 Bコース",
       researchSources: ["https://example.com/recruit"],
     });

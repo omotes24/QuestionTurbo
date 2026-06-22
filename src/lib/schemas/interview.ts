@@ -72,6 +72,7 @@ export type CompanyProfile = z.infer<typeof companyProfileSchema>;
 
 export const researchCompanyRequestSchema = z.object({
   selfInfo: z.string().trim().min(1, "自分のことを入力してください"),
+  companyName: z.string().trim().min(1, "会社名を入力してください"),
   companyWebsite: z.string().trim().min(1, "企業Webサイトを入力してください"),
   desiredCourse: z.string().trim().min(1, "志望コースを入力してください"),
   additionalNotes: z.string().default(""),

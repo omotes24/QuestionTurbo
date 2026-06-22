@@ -20,8 +20,9 @@ export const dynamic = "force-dynamic";
 function mockResearchCompany(request: ResearchCompanyRequest): CompanyProfile {
   const now = new Date().toISOString();
   const companyHint =
-    request.companyWebsite.match(/https?:\/\/(?:www\.)?([^/\s]+)/)?.[1] ??
-    "調査対象企業";
+    request.companyName ||
+    (request.companyWebsite.match(/https?:\/\/(?:www\.)?([^/\s]+)/)?.[1] ??
+      "調査対象企業");
   return {
     id: crypto.randomUUID(),
     label: `${companyHint} 調査メモ`,
@@ -43,6 +44,7 @@ function mockResearchCompany(request: ResearchCompanyRequest): CompanyProfile {
       "配属後に現場課題を把握するプロセス、技術検証から運用定着までの進め方、若手に期待する役割。",
     researchInput: [
       `自分のこと: ${request.selfInfo}`,
+      `会社名: ${request.companyName}`,
       `企業Webサイト: ${request.companyWebsite}`,
       `志望コース: ${request.desiredCourse}`,
       `その他: ${request.additionalNotes}`,
@@ -69,11 +71,15 @@ function toCompanyProfile(
   body: ResearchCompanyRequest,
 ): CompanyProfile {
   const now = new Date().toISOString();
+  const companyName = body.companyName || output.companyName;
   return {
     ...output,
     id: crypto.randomUUID(),
+    label: companyName ? `${companyName} 調査メモ` : output.label,
+    companyName,
     researchInput: [
       `自分のこと: ${body.selfInfo}`,
+      `会社名: ${body.companyName}`,
       `企業Webサイト: ${body.companyWebsite}`,
       `志望コース: ${body.desiredCourse}`,
       `その他: ${body.additionalNotes}`,

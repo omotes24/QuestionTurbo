@@ -20,7 +20,7 @@ const steps = [
     href: "/company",
     label: "02",
     title: "会社を作る",
-    body: "Webサイトと志望コースからスロット化する。",
+    body: "会社名、Webサイト、志望コースからスロット化する。",
     icon: BriefcaseBusiness,
   },
   {
@@ -46,7 +46,7 @@ export default function Home() {
             会社ごとに整える。
           </h1>
           <p className="mt-6 max-w-2xl text-base font-medium leading-8 text-neutral-600">
-            自分の情報、企業Webサイト、志望コースだけを起点に、面接前の理解メモと回答案を作ります。
+            自分の情報、会社名、企業Webサイト、志望コースを起点に、面接前の理解メモと回答案を作ります。
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
