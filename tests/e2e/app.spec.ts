@@ -5,11 +5,11 @@ test("manual question flow with mock OpenAI", async ({ page }) => {
   await page.evaluate(() => localStorage.clear());
 
   await page.goto("/profile");
-  await page.getByLabel("現在の職種").fill("プロダクトマネージャー");
   await page
-    .getByLabel("強み")
-    .fill("顧客課題を構造化してチームを前進させる力");
-  await page.getByLabel("実績").fill("オンボーディング改善で解約率を下げた");
+    .getByLabel("自分のこと")
+    .fill(
+      "強み: 顧客課題を構造化してチームを前進させる力\n実績: オンボーディング改善で解約率を下げた",
+    );
   await page.getByRole("button", { name: "保存" }).click();
   await expect(page.getByText("メインプロフィール")).toBeVisible();
 
@@ -20,7 +20,7 @@ test("manual question flow with mock OpenAI", async ({ page }) => {
     .fill("https://sample.example.com/recruit");
   await page.getByLabel("志望コース").fill("プロダクト職 現場課題解決コース");
   await page.getByLabel("その他").fill("SatoFCの経験を中心に話したい");
-  await page.getByRole("button", { name: "面接準備スロットを作成" }).click();
+  await page.getByRole("button", { name: "学習用スロット作成" }).click();
   await expect(page.getByText("SLOT 1")).toBeVisible();
 
   await page.goto("/support");

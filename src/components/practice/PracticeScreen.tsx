@@ -68,15 +68,15 @@ export function PracticeScreen() {
   return (
     <section>
       <PageHeader
-        title="面接練習"
-        description="面接官役の質問に回答し、回答内容の評価、改善点、回答例、STAR整理、深掘り質問を確認します。"
+        title="練習"
+        description="質問を選び、面接前学習の内容を使って回答案を作ります。"
       />
       <div className="grid gap-4">
         <PreInterviewLearningPanel />
 
-        <section className="rounded-md border border-slate-200 bg-white p-4">
+        <section className="rounded-[28px] border border-neutral-950 bg-neutral-950 p-5 text-white shadow-sm">
           <div className="flex flex-wrap items-end gap-3">
-            <label className="grid gap-1 text-sm font-medium">
+            <label className="grid gap-2 text-sm font-semibold">
               <span>質問カテゴリー</span>
               <select
                 value={category}
@@ -86,7 +86,7 @@ export function PracticeScreen() {
                     questionBank[event.target.value]?.[0] ?? question,
                   );
                 }}
-                className="h-10 rounded-md border border-slate-300 bg-white px-3"
+                className="h-11 rounded-full border border-white/15 bg-white px-4 text-neutral-950"
               >
                 {practiceCategories.map((item) => (
                   <option key={item}>{item}</option>
@@ -96,20 +96,20 @@ export function PracticeScreen() {
             <button
               type="button"
               onClick={nextQuestion}
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-slate-950 px-4 text-sm font-medium text-white"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 text-sm font-semibold text-white transition hover:bg-white hover:text-neutral-950"
             >
               <MessageSquarePlus className="h-4 w-4" aria-hidden />
               次の質問
             </button>
           </div>
-          <p className="mt-4 rounded-md bg-slate-50 p-4 text-base font-medium">
+          <p className="mt-5 rounded-3xl bg-white p-5 text-2xl font-semibold leading-9 tracking-tight text-neutral-950">
             {question}
           </p>
         </section>
 
         <AudioCapturePanel />
 
-        <section className="rounded-md border border-slate-200 bg-white p-4">
+        <section className="rounded-[28px] border border-neutral-950/10 bg-white p-5 shadow-sm">
           <FormField label="自分の回答">
             <textarea
               className={textareaClassName}
@@ -119,17 +119,17 @@ export function PracticeScreen() {
             />
           </FormField>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-md border border-slate-200 p-3">
+            <div className="rounded-2xl border border-neutral-950/10 bg-neutral-50 p-4">
               <h2 className="text-sm font-semibold">評価・改善点</h2>
-              <ul className="mt-2 grid gap-2 text-sm text-slate-700">
+              <ul className="mt-2 grid gap-2 text-sm leading-6 text-neutral-700">
                 {suggestions.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
             </div>
-            <div className="rounded-md border border-slate-200 p-3">
+            <div className="rounded-2xl border border-neutral-950/10 bg-neutral-50 p-4">
               <h2 className="text-sm font-semibold">STAR整理</h2>
-              <dl className="mt-2 grid gap-1 text-sm text-slate-700">
+              <dl className="mt-2 grid gap-1 text-sm leading-6 text-neutral-700">
                 <div>Situation: 背景を1文で補足</div>
                 <div>Task: 自分の役割を明確化</div>
                 <div>Action: 具体的な行動を中心に説明</div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { Download, Save, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Download, Save, Trash2, UserRound } from "lucide-react";
 
 import {
   FormField,
@@ -14,168 +14,278 @@ import {
   type UserProfile,
 } from "@/lib/schemas/interview";
 import { useAppStorage } from "@/lib/storage/use-app-storage";
+import { cn } from "@/lib/utils";
 
-const fields: Array<[keyof UserProfile, string, "input" | "textarea"]> = [
-  ["label", "表示名", "input"],
-  ["nameOrAlias", "氏名または呼称", "input"],
-  ["currentRole", "現在の職種", "input"],
-  ["careerSummary", "経歴概要", "textarea"],
-  ["workHistory", "職歴", "textarea"],
-  ["skills", "スキル", "textarea"],
-  ["strengths", "強み", "textarea"],
-  ["weaknesses", "弱み", "textarea"],
-  ["achievements", "実績", "textarea"],
-  ["metrics", "成果数値", "textarea"],
-  ["successStories", "成功経験", "textarea"],
-  ["failureStories", "失敗経験", "textarea"],
-  ["managementExperience", "マネジメント経験", "textarea"],
-  ["careerChangeReason", "転職理由", "textarea"],
-  ["motivationMaterials", "志望動機の素材", "textarea"],
-  ["preferredTone", "希望する話し方", "textarea"],
-  ["forbiddenInformation", "回答で絶対に使わない情報", "textarea"],
-];
+function profileToSelfText(profile: UserProfile): string {
+  return [
+    profile.careerSummary,
+    profile.strengths ? `強み: ${profile.strengths}` : "",
+    profile.weaknesses ? `弱み: ${profile.weaknesses}` : "",
+    profile.achievements ? `実績: ${profile.achievements}` : "",
+    profile.successStories ? `成功経験: ${profile.successStories}` : "",
+    profile.failureStories ? `挫折・苦労: ${profile.failureStories}` : "",
+    profile.managementExperience
+      ? `リーダー経験: ${profile.managementExperience}`
+      : "",
+    profile.motivationMaterials
+      ? `志望動機の素材: ${profile.motivationMaterials}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+}
 
 export function ProfileManager() {
   const { storage, actions } = useAppStorage();
-  const firstProfile = storage.profiles[0];
-  const [draft, setDraft] = useState<UserProfile>(
-    firstProfile ?? createEmptyUserProfile(),
-  );
+  const [draft, setDraft] = useState<UserProfile>(createEmptyUserProfile());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selfText, setSelfText] = useState("");
+  const [forbiddenInformation, setForbiddenInformation] = useState("");
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
-  const savedIds = useMemo(
-    () => new Set(storage.profiles.map((item) => item.id)),
-    [storage.profiles],
+  const firstProfile = storage.profiles[0] ?? null;
+  const activeProfile = useMemo(
+    () => storage.profiles.find((profile) => profile.id === selectedId) ?? null,
+    [selectedId, storage.profiles],
   );
 
-  function updateField(key: keyof UserProfile, value: string) {
-    setDraft((current) => ({ ...current, [key]: value }));
+  useEffect(() => {
+    if (!selectedId && firstProfile) {
+      const timer = window.setTimeout(() => {
+        setSelectedId(firstProfile.id);
+        setDraft(firstProfile);
+        setSelfText(profileToSelfText(firstProfile));
+        setForbiddenInformation(firstProfile.forbiddenInformation);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+    return undefined;
+  }, [firstProfile, selectedId]);
+
+  function selectProfile(profile: UserProfile) {
+    setSelectedId(profile.id);
+    setDraft(profile);
+    setSelfText(profileToSelfText(profile));
+    setForbiddenInformation(profile.forbiddenInformation);
+    setImportStatus(null);
   }
 
   function save() {
-    actions.saveProfile({ ...draft, updatedAt: new Date().toISOString() });
+    const now = new Date().toISOString();
+    const next: UserProfile = {
+      ...draft,
+      label: draft.label.trim() || "メインプロフィール",
+      careerSummary: selfText,
+      strengths: "",
+      weaknesses: "",
+      achievements: "",
+      successStories: "",
+      failureStories: "",
+      managementExperience: "",
+      motivationMaterials: "",
+      forbiddenInformation,
+      updatedAt: now,
+    };
+    actions.saveProfile(next);
+    setDraft(next);
+    setSelectedId(next.id);
+    setImportStatus("保存しました。");
   }
 
-  const importLocalSeed = useCallback(
-    async (silent = false) => {
-      try {
-        const response = await fetch("/api/local-profile-seed", {
-          cache: "no-store",
-        });
-        if (!response.ok) {
-          throw new Error("ローカル下書きを読み込めませんでした");
-        }
-        const data = (await response.json()) as { profile: UserProfile | null };
-        if (!data.profile) {
-          if (!silent) {
-            setImportStatus("ローカル下書きは見つかりませんでした。");
-          }
-          return;
-        }
-        actions.saveProfile(data.profile);
-        setDraft(data.profile);
-        setImportStatus("ローカル下書きをプロフィールに取り込みました。");
-      } catch (error) {
-        setImportStatus(
-          error instanceof Error
-            ? error.message
-            : "ローカル下書きの取り込みに失敗しました。",
-        );
+  function createNew() {
+    const empty = createEmptyUserProfile();
+    setDraft(empty);
+    setSelectedId(null);
+    setSelfText("");
+    setForbiddenInformation("");
+    setImportStatus(null);
+  }
+
+  const importLocalSeed = useCallback(async () => {
+    try {
+      const response = await fetch("/api/local-profile-seed", {
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        throw new Error("ローカル下書きを読み込めませんでした");
       }
-    },
-    [actions],
-  );
+      const data = (await response.json()) as { profile: UserProfile | null };
+      if (!data.profile) {
+        setImportStatus("ローカル下書きは見つかりませんでした。");
+        return;
+      }
+      actions.saveProfile(data.profile);
+      selectProfile(data.profile);
+      setImportStatus("ローカル下書きを取り込みました。");
+    } catch (error) {
+      setImportStatus(
+        error instanceof Error
+          ? error.message
+          : "ローカル下書きの取り込みに失敗しました。",
+      );
+    }
+  }, [actions]);
 
   return (
     <section>
       <PageHeader
-        title="ユーザー情報登録"
-        description="回答案の根拠として使える本人情報だけを登録します。回答で使わない情報は明示しておくと生成時に除外しやすくなります。"
+        title="自分のこと"
+        description="面接で使いたい経験、強み、弱み、研究、チーム経験をそのまま貼ります。ここにない内容は回答案に使いません。"
       />
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
-        <form className="grid gap-4 rounded-md border border-slate-200 bg-white p-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            {fields.map(([key, label, kind]) => (
-              <FormField key={key} label={label}>
-                {kind === "input" ? (
-                  <input
-                    className={inputClassName}
-                    value={String(draft[key])}
-                    onChange={(event) => updateField(key, event.target.value)}
-                  />
-                ) : (
+
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <form className="rounded-[28px] border border-neutral-950/10 bg-white p-5 shadow-sm sm:p-6">
+          <div className="grid gap-5">
+            <FormField label="プロフィール名">
+              <input
+                className={inputClassName}
+                value={draft.label}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    label: event.target.value,
+                  }))
+                }
+                placeholder="メインプロフィール"
+              />
+            </FormField>
+
+            <FormField label="自分のこと">
+              <textarea
+                className={`${textareaClassName} min-h-[360px]`}
+                value={selfText}
+                onChange={(event) => setSelfText(event.target.value)}
+                placeholder="SatoFC、研究、塾運営、強み、弱み、挫折経験などをまとめて貼り付けます。"
+              />
+            </FormField>
+
+            <details className="rounded-2xl border border-neutral-950/10 bg-neutral-50 p-4">
+              <summary className="cursor-pointer text-sm font-semibold text-neutral-900">
+                使わない情報だけ指定する
+              </summary>
+              <div className="mt-4">
+                <FormField label="回答で使わない情報">
                   <textarea
-                    className={textareaClassName}
-                    value={String(draft[key])}
-                    onChange={(event) => updateField(key, event.target.value)}
+                    className={`${textareaClassName} min-h-28`}
+                    value={forbiddenInformation}
+                    onChange={(event) =>
+                      setForbiddenInformation(event.target.value)
+                    }
+                    placeholder="面接回答に出したくない情報、触れないでほしい話題"
                   />
-                )}
-              </FormField>
-            ))}
+                </FormField>
+              </div>
+            </details>
+
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={save}
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-red-600"
+              >
+                <Save className="h-4 w-4" aria-hidden />
+                保存
+              </button>
+              <button
+                type="button"
+                onClick={importLocalSeed}
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-950/15 bg-white px-5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-950"
+              >
+                <Download className="h-4 w-4" aria-hidden />
+                下書き取込
+              </button>
+              <button
+                type="button"
+                onClick={createNew}
+                className="h-11 rounded-full border border-neutral-950/15 bg-white px-5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-950"
+              >
+                新規
+              </button>
+            </div>
+
+            {importStatus ? (
+              <p className="rounded-2xl border border-neutral-950/10 bg-neutral-50 px-4 py-3 text-sm font-medium text-neutral-700">
+                {importStatus}
+              </p>
+            ) : null}
           </div>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={save}
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-slate-950 px-4 text-sm font-medium text-white"
-            >
-              <Save className="h-4 w-4" aria-hidden />
-              保存
-            </button>
-            <button
-              type="button"
-              onClick={() => setDraft(createEmptyUserProfile())}
-              className="h-10 rounded-md border border-slate-300 px-4 text-sm font-medium"
-            >
-              新規作成
-            </button>
-            <button
-              type="button"
-              onClick={() => importLocalSeed()}
-              className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 px-4 text-sm font-medium"
-            >
-              <Download className="h-4 w-4" aria-hidden />
-              ローカル下書きを取り込む
-            </button>
-          </div>
-          {importStatus ? (
-            <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
-              {importStatus}
-            </p>
-          ) : null}
         </form>
-        <aside className="rounded-md border border-slate-200 bg-white p-4">
-          <h2 className="text-sm font-semibold">登録済み</h2>
-          <div className="mt-3 grid gap-2">
+
+        <aside className="rounded-[28px] border border-neutral-950/10 bg-neutral-950 p-4 text-white shadow-sm">
+          <div className="flex items-center justify-between gap-3 px-1">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-red-400">
+                Profile
+              </p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight">
+                Saved Slot
+              </h2>
+            </div>
+            <UserRound className="h-5 w-5 text-neutral-400" aria-hidden />
+          </div>
+
+          <div className="mt-4 grid gap-2">
             {storage.profiles.length === 0 ? (
-              <p className="text-sm text-slate-500">まだ登録がありません。</p>
+              <p className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-neutral-300">
+                まだ保存されていません。
+              </p>
             ) : (
-              storage.profiles.map((profile) => (
+              storage.profiles.map((profile, index) => (
                 <div
                   key={profile.id}
-                  className="rounded-md border border-slate-200 p-3"
+                  className={cn(
+                    "rounded-2xl border p-3 transition",
+                    activeProfile?.id === profile.id
+                      ? "border-white bg-white text-neutral-950"
+                      : "border-white/10 bg-white/5 text-white hover:border-white/40",
+                  )}
                 >
                   <button
                     type="button"
-                    onClick={() => setDraft(profile)}
-                    className="block w-full text-left text-sm font-medium"
+                    onClick={() => selectProfile(profile)}
+                    className="block w-full text-left"
                   >
-                    {profile.label}
-                  </button>
-                  <div className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-500">
-                    <span>
-                      {new Date(profile.updatedAt).toLocaleString("ja-JP")}
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-500">
+                      PROFILE {index + 1}
                     </span>
-                    {savedIds.has(profile.id) ? (
-                      <button
-                        type="button"
-                        aria-label={`${profile.label}を削除`}
-                        onClick={() => actions.deleteProfile(profile.id)}
-                        className="rounded p-1 text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden />
-                      </button>
-                    ) : null}
+                    <span className="mt-1 block text-sm font-semibold">
+                      {profile.label}
+                    </span>
+                    <span
+                      className={cn(
+                        "mt-2 line-clamp-3 block text-xs leading-5",
+                        activeProfile?.id === profile.id
+                          ? "text-neutral-600"
+                          : "text-neutral-400",
+                      )}
+                    >
+                      {profile.careerSummary || "内容未入力"}
+                    </span>
+                  </button>
+                  <div className="mt-3 flex items-center justify-between gap-2">
+                    <span
+                      className={cn(
+                        "text-[11px]",
+                        activeProfile?.id === profile.id
+                          ? "text-neutral-500"
+                          : "text-neutral-500",
+                      )}
+                    >
+                      {new Date(profile.updatedAt).toLocaleDateString("ja-JP")}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`${profile.label}を削除`}
+                      onClick={() => actions.deleteProfile(profile.id)}
+                      className={cn(
+                        "rounded-full p-1.5 transition",
+                        activeProfile?.id === profile.id
+                          ? "text-red-600 hover:bg-red-50"
+                          : "text-neutral-400 hover:bg-white/10 hover:text-white",
+                      )}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden />
+                    </button>
                   </div>
                 </div>
               ))

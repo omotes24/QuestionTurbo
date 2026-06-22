@@ -74,21 +74,26 @@ export function AudioCapturePanel({
   }
 
   return (
-    <section className="rounded-md border border-slate-200 bg-white p-4">
+    <section className="rounded-[28px] border border-neutral-950/10 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-semibold">音声入力状態</h2>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-red-600">
+            Audio
+          </p>
+          <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+            音声入力
+          </h2>
+          <p className="mt-2 text-sm font-medium leading-6 text-neutral-600">
             remoteStream は質問判定に使用し、localMicStream
             は自動生成に使いません。
           </p>
         </div>
         <span
           className={cn(
-            "rounded border px-2 py-1 text-xs font-medium",
+            "rounded-full border px-3 py-1.5 text-xs font-semibold",
             transcription.status === "live"
               ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-              : "border-slate-200 bg-slate-50 text-slate-600",
+              : "border-neutral-950/10 bg-neutral-50 text-neutral-600",
           )}
         >
           {transcription.status}
@@ -98,7 +103,7 @@ export function AudioCapturePanel({
         <button
           type="button"
           onClick={startRemoteAudio}
-          className="inline-flex h-10 items-center gap-2 rounded-md bg-slate-950 px-4 text-sm font-medium text-white"
+          className="inline-flex h-11 items-center gap-2 rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white transition hover:bg-red-600"
         >
           <MonitorUp className="h-4 w-4" aria-hidden />
           タブ・画面音声を共有
@@ -106,7 +111,7 @@ export function AudioCapturePanel({
         <button
           type="button"
           onClick={startMic}
-          className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 px-4 text-sm font-medium"
+          className="inline-flex h-11 items-center gap-2 rounded-full border border-neutral-950/15 bg-white px-5 text-sm font-semibold transition hover:border-neutral-950"
         >
           <Mic className="h-4 w-4" aria-hidden />
           マイクを開始
@@ -114,41 +119,41 @@ export function AudioCapturePanel({
         <button
           type="button"
           onClick={stopAll}
-          className="inline-flex h-10 items-center gap-2 rounded-md border border-red-300 px-4 text-sm font-medium text-red-700"
+          className="inline-flex h-11 items-center gap-2 rounded-full border border-red-300 bg-white px-5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
         >
           <Square className="h-4 w-4" aria-hidden />
           停止
         </button>
       </div>
       {error || transcription.error ? (
-        <p className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+        <p className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm font-medium text-amber-900">
           {error ?? transcription.error}
         </p>
       ) : null}
       <div className="mt-4 grid gap-2">
         <h3 className="text-sm font-semibold">リアルタイム文字起こし</h3>
         {transcription.items.length === 0 ? (
-          <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-500">
+          <p className="rounded-2xl bg-neutral-50 p-4 text-sm font-medium text-neutral-500">
             まだ文字起こしはありません。
           </p>
         ) : (
           transcription.items.slice(0, 6).map((item) => (
             <div
               key={`${item.id}-${item.createdAt}`}
-              className="rounded-md border border-slate-200 p-3"
+              className="rounded-2xl border border-neutral-950/10 p-4"
             >
-              <div className="mb-1 flex items-center justify-between gap-2 text-xs text-slate-500">
+              <div className="mb-1 flex items-center justify-between gap-2 text-xs font-semibold text-neutral-500">
                 <span>{item.source === "remote" ? "相手側" : "自分側"}</span>
                 <span>{item.final ? "確定" : "入力中"}</span>
               </div>
-              <p className="whitespace-pre-wrap text-sm leading-6">
+              <p className="whitespace-pre-wrap text-sm leading-6 text-neutral-800">
                 {item.text}
               </p>
               {item.source === "remote" && item.final && onRemoteTranscript ? (
                 <button
                   type="button"
                   onClick={() => onRemoteTranscript(item.text)}
-                  className="mt-2 inline-flex h-8 items-center gap-2 rounded-md border border-slate-300 px-3 text-xs font-medium"
+                  className="mt-3 inline-flex h-9 items-center gap-2 rounded-full border border-neutral-950/15 px-3 text-xs font-semibold transition hover:border-neutral-950"
                 >
                   <Wand2 className="h-3.5 w-3.5" aria-hidden />
                   この発話から回答案を作成

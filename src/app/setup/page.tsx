@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -7,37 +8,65 @@ export default function SetupPage() {
   return (
     <AppShell>
       <PageHeader
-        title="初期設定"
-        description="OpenAI API キーはサーバー側の .env.local にだけ置き、ブラウザや localStorage には保存しません。"
+        title="Setup"
+        description="APIキーは .env.local だけで管理します。ブラウザ、localStorage、GitHubには保存しません。"
       />
-      <section className="grid gap-4 rounded-md border border-slate-200 bg-white p-5 text-sm leading-6">
-        <div>
-          <h2 className="font-semibold">必要な環境変数</h2>
-          <pre className="mt-2 overflow-x-auto rounded-md bg-slate-950 p-3 text-xs text-white">
-            {`OPENAI_API_KEY=...\nOPENAI_TRANSCRIPTION_MODEL=gpt-realtime-whisper\nOPENAI_CLASSIFIER_MODEL=gpt-5.4-nano\nOPENAI_ANSWER_MODEL=gpt-5.4-mini`}
-          </pre>
+
+      <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="rounded-[28px] border border-neutral-950/10 bg-white p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700">
+              <ShieldCheck className="h-5 w-5" aria-hidden />
+            </span>
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                準備は `.env.local` で完結
+              </h2>
+              <p className="mt-3 text-sm font-medium leading-7 text-neutral-600">
+                新しいAPIキーに差し替える時は、プロジェクト直下の `.env.local`
+                の `OPENAI_API_KEY` だけを変更します。
+              </p>
+            </div>
+          </div>
+
+          <details className="mt-6 rounded-2xl border border-neutral-950/10 bg-neutral-50 p-4">
+            <summary className="cursor-pointer text-sm font-semibold">
+              環境変数を見る
+            </summary>
+            <pre className="mt-4 overflow-x-auto rounded-2xl bg-neutral-950 p-4 text-xs leading-6 text-white">
+              {`OPENAI_API_KEY=新しいAPIキー
+OPENAI_MOCK_MODE=false
+OPENAI_TRANSCRIPTION_MODEL=gpt-realtime-whisper
+OPENAI_CLASSIFIER_MODEL=gpt-5.4-nano
+OPENAI_ANSWER_MODEL=gpt-5.4-mini`}
+            </pre>
+          </details>
         </div>
-        <div>
-          <h2 className="font-semibold">送信される情報</h2>
-          <p className="mt-1 text-slate-600">
-            質問判定では確定文字起こし、回答生成では質問、登録済みプロフィール、応募情報を
-            OpenAI API へ送信します。生音声は標準保存しません。
+
+        <aside className="rounded-[28px] border border-neutral-950 bg-neutral-950 p-5 text-white shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-red-400">
+            Next
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/profile"
-            className="rounded-md bg-slate-950 px-4 py-2 font-medium text-white"
-          >
-            ユーザー情報へ
-          </Link>
-          <Link
-            href="/company"
-            className="rounded-md border border-slate-300 px-4 py-2 font-medium"
-          >
-            企業・求人情報へ
-          </Link>
-        </div>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight">
+            入力へ進む
+          </h2>
+          <div className="mt-6 grid gap-2">
+            <Link
+              href="/profile"
+              className="inline-flex h-12 items-center justify-between rounded-full bg-white px-5 text-sm font-semibold text-neutral-950 transition hover:bg-red-500 hover:text-white"
+            >
+              自分のこと
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+            <Link
+              href="/company"
+              className="inline-flex h-12 items-center justify-between rounded-full border border-white/15 px-5 text-sm font-semibold text-white transition hover:bg-white hover:text-neutral-950"
+            >
+              会社スロット
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
+        </aside>
       </section>
     </AppShell>
   );

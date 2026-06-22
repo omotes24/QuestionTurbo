@@ -4,10 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BriefcaseBusiness,
-  History,
   Mic2,
   Settings,
-  ShieldCheck,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -15,63 +13,90 @@ import {
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/setup", label: "初期設定", icon: Settings },
-  { href: "/profile", label: "ユーザー情報", icon: UserRound },
-  { href: "/company", label: "企業・求人", icon: BriefcaseBusiness },
-  { href: "/practice", label: "面接練習", icon: Mic2 },
-  { href: "/support", label: "同意済み支援", icon: UsersRound },
-  { href: "/history", label: "履歴", icon: History },
-  { href: "/privacy", label: "削除・プライバシー", icon: ShieldCheck },
+  { href: "/profile", label: "自分", icon: UserRound },
+  { href: "/company", label: "会社", icon: BriefcaseBusiness },
+  { href: "/practice", label: "練習", icon: Mic2 },
+  { href: "/support", label: "本番", icon: UsersRound },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-[#f5f7f8] text-slate-950">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <Link href="/" className="flex min-w-0 flex-col">
-            <span className="text-base font-semibold leading-6">
-              日本語面接アシスタント
-            </span>
-            <span className="text-xs text-slate-500">
-              練習・同意済み会話支援専用
-            </span>
-          </Link>
-          <span className="rounded border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
-            AI支援利用中
-          </span>
+    <div className="min-h-screen bg-[#f4f4f1] text-neutral-950">
+      <header className="sticky top-0 z-20 border-b border-neutral-950/10 bg-[#f4f4f1]/95 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+          <div className="flex items-center justify-between gap-4">
+            <Link href="/" className="group flex min-w-0 items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-950 text-sm font-semibold tracking-tight text-white">
+                IA
+              </span>
+              <span className="min-w-0">
+                <span className="block text-[15px] font-semibold leading-5 tracking-tight">
+                  Interview Assistant
+                </span>
+                <span className="block truncate text-xs font-medium text-neutral-500">
+                  Japanese Interview Console
+                </span>
+              </span>
+            </Link>
+
+            <div className="flex items-center gap-2">
+              <span className="hidden rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-700 sm:inline-flex">
+                AI READY
+              </span>
+              <Link
+                href="/setup"
+                aria-label="設定"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-950/10 bg-white text-neutral-700 shadow-sm transition hover:border-neutral-950 hover:text-neutral-950"
+              >
+                <Settings className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+          </div>
+
+          <nav
+            aria-label="主要画面"
+            className="mt-4 grid grid-cols-4 overflow-hidden rounded-full border border-neutral-950/10 bg-white p-1 shadow-sm"
+          >
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const active =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex h-10 items-center justify-center gap-2 rounded-full px-2 text-sm font-semibold tracking-tight transition",
+                    active
+                      ? "bg-neutral-950 text-white shadow-sm"
+                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-950",
+                  )}
+                >
+                  <Icon aria-hidden className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
       </header>
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-0 px-5 py-5 lg:grid-cols-[240px_1fr] lg:gap-6">
-        <nav
-          aria-label="主要画面"
-          className="mb-5 grid grid-cols-2 gap-2 lg:mb-0 lg:block"
-        >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "mb-1 flex h-10 items-center gap-2 rounded-md px-3 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-slate-950 text-white"
-                    : "text-slate-700 hover:bg-white",
-                )}
-              >
-                <Icon aria-hidden className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
         <main className="min-w-0">{children}</main>
+        <footer className="mt-12 flex flex-wrap gap-5 border-t border-neutral-950/10 pt-5 text-xs font-medium text-neutral-500">
+          <Link href="/history" className="hover:text-neutral-950">
+            History
+          </Link>
+          <Link href="/privacy" className="hover:text-neutral-950">
+            Privacy
+          </Link>
+          <Link href="/setup" className="hover:text-neutral-950">
+            Setup
+          </Link>
+        </footer>
       </div>
     </div>
   );
