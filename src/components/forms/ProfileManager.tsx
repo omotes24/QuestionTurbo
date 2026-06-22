@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Download, Save, Trash2 } from "lucide-react";
 
 import {
   FormField,
@@ -41,6 +41,7 @@ export function ProfileManager() {
   const [draft, setDraft] = useState<UserProfile>(
     firstProfile ?? createEmptyUserProfile(),
   );
+  const [importStatus, setImportStatus] = useState<string | null>(null);
 
   const savedIds = useMemo(
     () => new Set(storage.profiles.map((item) => item.id)),
@@ -54,6 +55,36 @@ export function ProfileManager() {
   function save() {
     actions.saveProfile({ ...draft, updatedAt: new Date().toISOString() });
   }
+
+  const importLocalSeed = useCallback(
+    async (silent = false) => {
+      try {
+        const response = await fetch("/api/local-profile-seed", {
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          throw new Error("ローカル下書きを読み込めませんでした");
+        }
+        const data = (await response.json()) as { profile: UserProfile | null };
+        if (!data.profile) {
+          if (!silent) {
+            setImportStatus("ローカル下書きは見つかりませんでした。");
+          }
+          return;
+        }
+        actions.saveProfile(data.profile);
+        setDraft(data.profile);
+        setImportStatus("ローカル下書きをプロフィールに取り込みました。");
+      } catch (error) {
+        setImportStatus(
+          error instanceof Error
+            ? error.message
+            : "ローカル下書きの取り込みに失敗しました。",
+        );
+      }
+    },
+    [actions],
+  );
 
   return (
     <section>
@@ -98,7 +129,20 @@ export function ProfileManager() {
             >
               新規作成
             </button>
+            <button
+              type="button"
+              onClick={() => importLocalSeed()}
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-300 px-4 text-sm font-medium"
+            >
+              <Download className="h-4 w-4" aria-hidden />
+              ローカル下書きを取り込む
+            </button>
           </div>
+          {importStatus ? (
+            <p className="rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+              {importStatus}
+            </p>
+          ) : null}
         </form>
         <aside className="rounded-md border border-slate-200 bg-white p-4">
           <h2 className="text-sm font-semibold">登録済み</h2>
