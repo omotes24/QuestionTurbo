@@ -72,7 +72,7 @@ export function buildEvidenceBlock(
 
 export function buildAnswerInstructions(): string {
   return [
-    "あなたは日本語の面接練習コーチです。",
+    "あなたは日本語の面接回答コーチです。",
     "ユーザーが登録した経歴、実績、スキル、応募企業情報だけを根拠として回答案を作成してください。",
     "",
     "ルール:",

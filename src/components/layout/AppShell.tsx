@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BriefcaseBusiness,
-  Mic2,
   Settings,
   UserRound,
   UsersRound,
@@ -15,8 +14,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/profile", label: "自分", icon: UserRound },
   { href: "/company", label: "会社", icon: BriefcaseBusiness },
-  { href: "/practice", label: "練習", icon: Mic2 },
-  { href: "/support", label: "本番", icon: UsersRound },
+  { href: "/support", label: "面接", icon: UsersRound },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -57,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
           <nav
             aria-label="主要画面"
-            className="mt-4 grid grid-cols-4 overflow-hidden rounded-full border border-neutral-950/10 bg-white p-1 shadow-sm"
+            className="mt-4 grid grid-cols-3 overflow-hidden rounded-full border border-neutral-950/10 bg-white p-1 shadow-sm"
           >
             {navItems.map((item) => {
               const Icon = item.icon;

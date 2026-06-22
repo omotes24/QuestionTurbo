@@ -18,8 +18,8 @@ export function SupportScreen() {
   return (
     <section>
       <PageHeader
-        title="本番支援"
-        description="参加者全員がAI支援を認識し、必要な同意を得ている会話でだけ使います。自動音声回答、自動入力、隠し表示はありません。"
+        title="面接"
+        description="面接前に学習し、質問を入力して回答案を作ります。音声を使う場合は、参加者へAI支援利用を明示してから開始します。"
       />
       <div className="mb-4 rounded-[28px] border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
         <label className="flex items-start gap-3 text-sm font-semibold leading-6 text-emerald-950">

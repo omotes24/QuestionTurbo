@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, BriefcaseBusiness, Mic2, UserRound } from "lucide-react";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 
 import { AppShell } from "@/components/layout/AppShell";
 
@@ -19,11 +24,11 @@ const steps = [
     icon: BriefcaseBusiness,
   },
   {
-    href: "/practice",
+    href: "/support",
     label: "03",
-    title: "練習する",
-    body: "質問を選び、回答案と改善点を見る。",
-    icon: Mic2,
+    title: "面接で使う",
+    body: "同意確認後、質問を入れて回答案を見る。",
+    icon: UsersRound,
   },
 ];
 
@@ -52,10 +57,10 @@ export default function Home() {
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
             <Link
-              href="/company"
+              href="/support"
               className="inline-flex h-12 items-center rounded-full border border-neutral-950/15 bg-white px-6 text-sm font-semibold text-neutral-950 transition hover:border-neutral-950"
             >
-              会社スロットへ
+              面接へ
             </Link>
           </div>
         </div>

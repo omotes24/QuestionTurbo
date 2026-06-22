@@ -1,10 +1,5 @@
-import { AppShell } from "@/components/layout/AppShell";
-import { PracticeScreen } from "@/components/practice/PracticeScreen";
+import { redirect } from "next/navigation";
 
 export default function PracticePage() {
-  return (
-    <AppShell>
-      <PracticeScreen />
-    </AppShell>
-  );
+  redirect("/support");
 }
